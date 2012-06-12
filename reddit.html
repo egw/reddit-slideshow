@@ -140,6 +140,8 @@ $(document).ready(function() {
                 nextPage();
                 break;
             case 40:  // down = clear slides
+                $('#q')[0].value = '';
+                $('#msg').text("(cleared)");
                 $('.slides_control').remove();
                 break;
             default:
