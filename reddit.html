@@ -24,8 +24,7 @@
 
 var subreddit = null,
     afterLink = null,
-    beforeLink = null,
-    countLink = 0;
+    beforeLink = null;
 
 // given a url, return a link to the image, if possible
 function imageFromURL(url) {
@@ -50,6 +49,7 @@ function imageFromURL(url) {
 // to the page, scale them, and run the slideshow
 function loadSubreddit(sr, params) {
     if (params === undefined) params = {};
+    params.limit = 5;
 
     // remove slides if they exist
     $('.slides_control').remove();
@@ -58,7 +58,6 @@ function loadSubreddit(sr, params) {
     subreddit = sr;
     beforeLink = null;
     afterLink = null;
-    countLink = 0;
 
     $('#msg').text(subreddit + (params.before ? ("/B"+params.before) : params.after ? ("/A"+params.after) : ""));
     console.log(subreddit + "/" + JSON.stringify(params));
@@ -70,11 +69,10 @@ function loadSubreddit(sr, params) {
             var count = 0;
             var img = null;
 
-            afterLink = data.data.after;
-            beforeLink = data.data.before;
+            beforeLink = data.data.children[0].data.name;
+            afterLink = data.data.children[data.data.children.length - 1].data.name;
 
             data.data.children.forEach(function(child) {
-                countLink++;
 
                 // this is a naive way to filter for images.
                 // better would be doing http head requests.
@@ -108,7 +106,7 @@ function nextPage() {
     if (subreddit === undefined || afterLink === undefined)
         return false;
 
-    loadSubreddit(subreddit, { after : afterLink, count : countLink || 25 });
+    loadSubreddit(subreddit, { after : afterLink });
 }
 
 // get the next page of the current subreddit
@@ -116,7 +114,7 @@ function prevPage() {
     if (subreddit === undefined || beforeLink === undefined)
         return false;
 
-    loadSubreddit(subreddit, { before : beforeLink, count : countLink || 25 });
+    loadSubreddit(subreddit, { before : beforeLink });
 }
 
 $(document).ready(function() {
@@ -139,7 +137,11 @@ $(document).ready(function() {
             case 38:  // up = next page
                 nextPage();
                 break;
-            case 40:  // down = clear slides
+            case 40:  // down = previous page
+                prevPage();
+                break;
+
+            case 46: // delete = clear slides
                 $('#q')[0].value = '';
                 $('#msg').text("(cleared)");
                 $('.slides_control').remove();
