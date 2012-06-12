@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+
+<!--
+    playing with jquery and reddit
+
+    TODO: fix navigation, better link to permalink, understand how
+          the height and width works.
+
+    TODO/imgscale: wide pictures are poorly scaled, don't expand
+        pictures.
+
+    TODO: better loading info (callback from loading pictures),
+        next page of pictures.
+-->
+
+<html>
+<head>
+    <meta charset='utf-8'/>
+    <title>reddit thing</title>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
+    <script type="text/javascript" src="imgscale.jquery.min.js"></script>
+    <script type="text/javascript" src="slides.min.jquery.js"></script>
+    <script>
+
+
+// given a url, return a link to the image, if possible
+function image_from_url(url) {
+    var match;
+
+    if (url.match(/\.(?:jpg|gif|png)$/i)) {
+        return url;
+    } else if (match = url.match(/quickmeme.com\/meme\/(\w+)/i)) {  
+        return "http://i.qkme.me/" + match[1] + ".jpg";
+    } else if (match = url.match(/qkme.me\/(\w+)/i)) {
+        return "http://i.qkme.me/" + match[1] + ".jpg";
+    } else if (match = url.match(/imgur.com\/(\w+)$/i)) {
+        return "http://i.imgur.com/" + match[1] + ".jpg";
+    } else if (match = url.match(/thefreefap.com\/image\/(\d+)$/i)) {
+        return "http://www.thefreefap.com/pics/" + match[1] + ".jpg";
+    } else {
+        return false;
+    }
+}
+
+// look up the subreddit, get the image urls, add the images
+// to the page, scale them, and run the slideshow
+
+function load_subreddit(subreddit) {
+    var container = $('div.slides_container');
+    container.text("");
+
+    $.getJSON('http://www.reddit.com/r/' + subreddit + '/.json?jsonp=?',
+        function(data) {
+            var count = 0;
+            var img = null;
+
+            // remove slides if they exist
+            $('.slides_control').remove();
+
+            data.data.children.forEach(function(child) {
+
+                // this is a naive way to filter for images.
+                // better would be doing http head requests.
+                if (img = image_from_url(child.data.url)) {
+                    container.append("<div><a href='http://www.reddit.com" +
+                        child.data.permalink +"'><img src='" + img +
+                        "'/></a><p class='caption'>" +
+                        child.data.title + "</p></div>");
+                    count++;
+                }
+            });
+
+            // print count, return early if it's 0
+            $('#msg').text("count = " + count);
+            if (count == 0) return false;
+
+            // scale the images, start the slides
+            $('img').imgscale({parent : '.slides_container', scale : 'fit'});
+            $('#slides').slides({
+                preload : true,    preloadImage : "img/ajax-loader.gif",
+                play : 5000,       pause : 100,
+                hoverPause : true, effect : 'fade',
+                generatePagination : false });
+        }
+    );
+}
+
+
+
+$(document).ready(function() {
+
+    // set width and height
+    $('.slides_container').css({
+        width : $(window).width() * 0.98,
+        height : $(window).height() * 0.96
+    });
+
+    // add onchange to input box.
+    $('#q').change(function(event) {
+        var subreddit = event.currentTarget.value;
+        $('#msg').text(subreddit);
+        load_subreddit(subreddit);
+    });
+
+    // set focus
+    $('#q').focus();
+
+});  /* document.ready() */
+
+    </script>
+
+    <style>
+        body {
+            font-family: Verdana, Helvetica, sans-serif;
+            font-size: 0.8em;
+            background-color: #446;
+        }
+
+        #form {
+            z-index: 10 ;
+            position: fixed;
+            bottom: 10px;
+            right: 20px;
+        }
+
+        #q {
+            background-color: transparent;
+            border: solid #223 1px;
+        }
+
+        #slides {
+            z-index: 0 ;
+            position: fixed;
+            top: 10px; 
+            left : 10px;
+        }
+
+        .slides_container {
+            width: 100px;
+            height: 100px;
+            /* border: solid green 1px; */
+        }
+        .slides_container div {
+            /* border: solid red 1px; */
+            width: 1000px;
+            height: 100px;
+            text-align: center;
+        }
+        .slides_container div .caption {
+            z-index: 50;
+            position: absolute;
+            top: 0;
+            background-color: rgba(0,0,0,.5);
+            color: #aaa;
+            padding: 10px;
+            border: solid rgba(13,13,13,0.5) 1px;
+        }
+
+        /* next and previous areas on the right and left of the page */
+        #slides .next, #slides .prev {
+            z-index: 100;
+            position:absolute;
+            top: 0px;
+            width: 25%;
+            height: 100%;
+            display: block;
+            cursor: pointer;
+        }
+        #slides .next { right: 0px; }
+        #slides .prev { left: 0px; }
+
+    </style>
+            
+</head>
+<body>
+<div id='form'><input id='q'/><br/><label id='msg'>&nbsp;</label></div>
+<div id='slides'>
+    <div class='slides_container'>
+    </div>
+    <a class="prev"></a>
+    <a class="next"></a>
+</div>
+</body>
+</html>
