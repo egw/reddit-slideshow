@@ -28,7 +28,7 @@ var subreddit = null,
     countLink = 0;
 
 // given a url, return a link to the image, if possible
-function image_from_url(url) {
+function imageFromURL(url) {
     var match;
 
     if (url.match(/\.(?:jpg|gif|png)$/i)) {
@@ -48,30 +48,27 @@ function image_from_url(url) {
 
 // look up the subreddit, get the image urls, add the images
 // to the page, scale them, and run the slideshow
+function loadSubreddit(sr, params) {
+    if (params === undefined) params = {};
 
-function load_subreddit(sr, params) {
-    var container = $('div.slides_container');
-    container.text("");
+    // remove slides if they exist
+    $('.slides_control').remove();
 
+    // re-initialize globals
     subreddit = sr;
     beforeLink = null;
     afterLink = null;
     countLink = 0;
 
-    if (params === undefined) params = {};
-
+    $('#msg').text(subreddit + (params.before ? ("/B"+params.before) : params.after ? ("/A"+params.after) : ""));
     console.log(subreddit + "/" + JSON.stringify(params));
 
-
-    $('#msg').text(subreddit);
+    var container = $('div.slides_container');
     $.getJSON('http://www.reddit.com/r/' + subreddit + '/.json?jsonp=?',
         params,
         function(data) {
             var count = 0;
             var img = null;
-
-            // remove slides if they exist
-            $('.slides_control').remove();
 
             afterLink = data.data.after;
             beforeLink = data.data.before;
@@ -81,7 +78,7 @@ function load_subreddit(sr, params) {
 
                 // this is a naive way to filter for images.
                 // better would be doing http head requests.
-                if (img = image_from_url(child.data.url)) {
+                if (img = imageFromURL(child.data.url)) {
                     container.append("<div><a href='http://www.reddit.com" +
                         child.data.permalink +"'><img src='" + img +
                         "'/></a><p class='caption'>" +
@@ -107,19 +104,19 @@ function load_subreddit(sr, params) {
 }
 
 // get the next page of the current subreddit
-function next_page() {
+function nextPage() {
     if (subreddit === undefined || afterLink === undefined)
         return false;
 
-    load_subreddit(subreddit, { after : afterLink, count : countLink || 25 });
+    loadSubreddit(subreddit, { after : afterLink, count : countLink || 25 });
 }
 
 // get the next page of the current subreddit
-function prev_page() {
+function prevPage() {
     if (subreddit === undefined || beforeLink === undefined)
         return false;
 
-    load_subreddit(subreddit, { before : beforeLink, count : countLink || 25 });
+    loadSubreddit(subreddit, { before : beforeLink, count : countLink || 25 });
 }
 
 $(document).ready(function() {
@@ -140,7 +137,7 @@ $(document).ready(function() {
                 break;
 
             case 38:  // up = next page
-                alert('up');
+                nextPage();
                 break;
             case 40:  // down = clear slides
                 $('.slides_control').remove();
@@ -154,7 +151,7 @@ $(document).ready(function() {
 
     // add onchange to input box.
     $('#q').change(function(event) {
-        load_subreddit(event.currentTarget.value);
+        loadSubreddit(event.currentTarget.value);
     });
 
     // set focus
