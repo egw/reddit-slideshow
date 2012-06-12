@@ -22,6 +22,10 @@
     <script type="text/javascript" src="slides.min.jquery.js"></script>
     <script>
 
+var subreddit = null,
+    afterLink = null,
+    beforeLink = null,
+    countLink = 0;
 
 // given a url, return a link to the image, if possible
 function image_from_url(url) {
@@ -45,11 +49,23 @@ function image_from_url(url) {
 // look up the subreddit, get the image urls, add the images
 // to the page, scale them, and run the slideshow
 
-function load_subreddit(subreddit) {
+function load_subreddit(sr, params) {
     var container = $('div.slides_container');
     container.text("");
 
+    subreddit = sr;
+    beforeLink = null;
+    afterLink = null;
+    countLink = 0;
+
+    if (params === undefined) params = {};
+
+    console.log(subreddit + "/" + JSON.stringify(params));
+
+
+    $('#msg').text(subreddit);
     $.getJSON('http://www.reddit.com/r/' + subreddit + '/.json?jsonp=?',
+        params,
         function(data) {
             var count = 0;
             var img = null;
@@ -57,7 +73,11 @@ function load_subreddit(subreddit) {
             // remove slides if they exist
             $('.slides_control').remove();
 
+            afterLink = data.data.after;
+            beforeLink = data.data.before;
+
             data.data.children.forEach(function(child) {
+                countLink++;
 
                 // this is a naive way to filter for images.
                 // better would be doing http head requests.
@@ -81,11 +101,26 @@ function load_subreddit(subreddit) {
                 play : 5000,       pause : 100,
                 hoverPause : true, effect : 'fade',
                 generatePagination : false });
+
         }
     );
 }
 
+// get the next page of the current subreddit
+function next_page() {
+    if (subreddit === undefined || afterLink === undefined)
+        return false;
 
+    load_subreddit(subreddit, { after : afterLink, count : countLink || 25 });
+}
+
+// get the next page of the current subreddit
+function prev_page() {
+    if (subreddit === undefined || beforeLink === undefined)
+        return false;
+
+    load_subreddit(subreddit, { before : beforeLink, count : countLink || 25 });
+}
 
 $(document).ready(function() {
 
@@ -95,11 +130,31 @@ $(document).ready(function() {
         height : $(window).height() * 0.96
     });
 
+    $(document).keydown(function(event) {
+        switch (event.which) {
+            case 37: // left = previous slide
+                $('.prev').click();
+                break;
+            case 39:  // right = next slide
+                $('.next').click();
+                break;
+
+            case 38:  // up = next page
+                alert('up');
+                break;
+            case 40:  // down = clear slides
+                $('.slides_control').remove();
+                break;
+            default:
+                return true;
+        }
+
+        return false;
+    });
+
     // add onchange to input box.
     $('#q').change(function(event) {
-        var subreddit = event.currentTarget.value;
-        $('#msg').text(subreddit);
-        load_subreddit(subreddit);
+        load_subreddit(event.currentTarget.value);
     });
 
     // set focus
@@ -173,10 +228,11 @@ $(document).ready(function() {
             
 </head>
 <body>
-<div id='form'><input id='q'/><br/><label id='msg'>&nbsp;</label></div>
+<div id='form'>
+    <input id='q'/><br/>
+    <label id='msg'>&nbsp;</label></div>
 <div id='slides'>
-    <div class='slides_container'>
-    </div>
+    <div class='slides_container'></div>
     <a class="prev"></a>
     <a class="next"></a>
 </div>
