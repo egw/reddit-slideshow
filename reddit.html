@@ -38,6 +38,8 @@ function imageFromURL(url) {
         return "http://i.qkme.me/" + match[1] + ".jpg";
     } else if (match = url.match(/imgur.com\/(\w+)$/i)) {
         return "http://i.imgur.com/" + match[1] + ".jpg";
+    } else if (match = url.match(/picshd.com\/(\w+)$/i)) {
+        return "http://i.picshd.com/" + match[1] + ".jpg";
     } else if (match = url.match(/thefreefap.com\/image\/(\d+)$/i)) {
         return "http://www.thefreefap.com/pics/" + match[1] + ".jpg";
     } else {
@@ -49,7 +51,6 @@ function imageFromURL(url) {
 // to the page, scale them, and run the slideshow
 function loadSubreddit(sr, params) {
     if (params === undefined) params = {};
-    params.limit = 5;
 
     // remove slides if they exist
     $('.slides_control').remove();
