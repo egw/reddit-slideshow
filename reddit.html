@@ -22,6 +22,7 @@
     <script type="text/javascript" src="slides.min.jquery.js"></script>
     <script>
 
+// globals! gross.
 var subreddit = null,
     afterLink = null,
     beforeLink = null;
@@ -75,8 +76,9 @@ function loadSubreddit(sr, params) {
 
             data.data.children.forEach(function(child) {
 
-                // this is a naive way to filter for images.
-                // better would be doing http head requests.
+                // this is a naive way to filter for images. better would
+                // be http head requests or something, but I am a lazy,
+                // lazy man.
                 if (img = imageFromURL(child.data.url)) {
                     container.append("<div><a href='http://www.reddit.com" +
                         child.data.permalink +"'><img src='" + img +

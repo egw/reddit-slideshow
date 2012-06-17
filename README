@@ -1,0 +1,36 @@
+REDDIT SLIDESHOW
+================
+
+A simple, quick, and dirty reddit slideshow web app based on imgscale[1]
+and slidesjs[2] (included.) Load up the page, put in the name of a
+subreddit, and press enter. The app will download the first page of the
+subreddit and show the images it finds in a slideshow.
+
+The controls are
+
+     left arrow: previous image (or click on the left side of the screen)
+    right arrow: next image (or click on the right)
+       up arrow: load the next page of the subreddit
+     down arrow: load the previous page of the subreddit
+         delete: stop the slideshow and remove the slides
+
+clicking on the image itself will take you to the comment page.
+
+
+TODO
+====
+
+I'd like there to be a better pause other than just hovering over the
+image. I'd like there to be better feedback when the page is loading
+images in the background. I'd like the resize to be smarter -- it
+always fits the height of the window, even if the original image is
+smaller or wider than the window.
+
+
+LINKS
+=====
+    
+    1. http://imgscale.kjmeath.com/
+    2. http://slidesjs.com/
+
+
