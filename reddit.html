@@ -72,9 +72,6 @@ function loadSubreddit(sr, params) {
             var count = 0;
             var img = null;
 
-            beforeLink = data.data.children[0].data.name;
-            afterLink = data.data.children[data.data.children.length - 1].data.name;
-
             data.data.children.forEach(function(child) {
 
                 // this is a naive way to filter for images. better would
@@ -92,6 +89,9 @@ function loadSubreddit(sr, params) {
             // print count, return early if it's 0
             $('#msg').text("count = " + count);
             if (count == 0) return false;
+
+            beforeLink = data.data.children[0].data.name;
+            afterLink = data.data.children[data.data.children.length - 1].data.name;
 
             // scale the images, start the slides
             $('img').imgscale({parent : '.slides_container', scale : 'fit'});
